@@ -13,6 +13,7 @@
          height: 100%;
          overflow: hidden;
          background: #000;
+         touch-action: manipulation;
       }
 
       #panorama {
@@ -32,6 +33,7 @@
          background: rgba(0, 0, 0, 0.3);
          padding: 8px;
          border-radius: 8px;
+         z-index: 20;
       }
 
       #controls button {
@@ -41,12 +43,32 @@
          border-radius: 4px;
          cursor: pointer;
          font-size: 16px;
-         width: 40px;
-         height: 40px;
+         width: 44px;
+         height: 44px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
       }
 
       #controls button:hover {
-         background: rgba(255, 255, 255, 1);
+         background: rgba(255, 255, 255, 0.4);
+         transform: scale(1.05);
+      }
+
+      #controls svg {
+         width: 24px;
+         height: 24px;
+         fill: #000;
+         display: block;
+         margin: auto;
+      }
+
+      @media (max-width: 768px) {
+
+         #controls button {
+            width: 50px;
+            height: 50px;
+         }
       }
    </style>
 </head>
@@ -54,11 +76,28 @@
 <body>
    <div id="panorama"></div>
 
+   <!-- Правая панель -->
    <div id="controls">
-      <button id="up">⬆</button>
-      <button id="down">⬇</button>
-      <button id="left">⬅</button>
-      <button id="right">➡</button>
+      <button id="up" aria-label="Up">
+         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M7 14l5-5 5 5z" />
+         </svg>
+      </button>
+      <button id="down" aria-label="Down">
+         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M7 10l5 5 5-5z" />
+         </svg>
+      </button>
+      <button id="left" aria-label="Left">
+         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M14 7l-5 5 5 5z" />
+         </svg>
+      </button>
+      <button id="right" aria-label="Right">
+         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M10 7l5 5-5 5z" />
+         </svg>
+      </button>
       <button id="zoomIn">＋</button>
       <button id="zoomOut">－</button>
       <button id="fs">⛶</button>
@@ -67,53 +106,29 @@
    <script src="https://cdn.pannellum.org/2.5/pannellum.js"></script>
    <script>
       const viewer = pannellum.viewer('panorama', {
-         type: "equirectangular",
-         panorama: "pano.webp",
-         autoLoad: true,
-         hfov: 100,
-         // orientationOnByDefault: true,
-         showControls: false, // убираем стандартную панель
-         autoRotate: 0
-      });
-
-      // Функции управления
-      document.getElementById('up').addEventListener('click', () => {
-         const pitch = viewer.getPitch();
-         viewer.setPitch(pitch - 10);
-      });
-
-      document.getElementById('down').addEventListener('click', () => {
-         const pitch = viewer.getPitch();
-         viewer.setPitch(pitch + 10);
-      });
-
-      document.getElementById('left').addEventListener('click', () => {
-         const yaw = viewer.getYaw();
-         viewer.setYaw(yaw - 10);
-      });
-
-      document.getElementById('right').addEventListener('click', () => {
-         const yaw = viewer.getYaw();
-         viewer.setYaw(yaw + 10);
-      });
-
-      document.getElementById('zoomIn').addEventListener('click', () => {
-         const hfov = viewer.getHfov();
-         viewer.setHfov(hfov - 10);
-      });
-
-      document.getElementById('zoomOut').addEventListener('click', () => {
-         const hfov = viewer.getHfov();
-         viewer.setHfov(hfov + 10);
-      });
-
-      document.getElementById('fs').addEventListener('click', () => {
-         if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen();
-         } else {
-            document.exitFullscreen();
+         default: { firstScene: "day", hfov: 100, showControls: false, autoRotate: 0 },
+         scenes: {
+            day: { type: "equirectangular", panorama: "pano.webp", autoLoad: true }
          }
       });
+
+      function addMobileClick(el, fn) {
+         el.addEventListener('click', fn);
+         el.addEventListener('touchend', e => { e.preventDefault(); fn(); });
+      }
+
+      // Панель управления
+      addMobileClick(document.getElementById('up'), () => viewer.setPitch(viewer.getPitch() - 10));
+      addMobileClick(document.getElementById('down'), () => viewer.setPitch(viewer.getPitch() + 10));
+      addMobileClick(document.getElementById('left'), () => viewer.setYaw(viewer.getYaw() - 10));
+      addMobileClick(document.getElementById('right'), () => viewer.setYaw(viewer.getYaw() + 10));
+      addMobileClick(document.getElementById('zoomIn'), () => viewer.setHfov(viewer.getHfov() - 10));
+      addMobileClick(document.getElementById('zoomOut'), () => viewer.setHfov(viewer.getHfov() + 10));
+      addMobileClick(document.getElementById('fs'), () => {
+         if (!document.fullscreenElement) { document.documentElement.requestFullscreen(); }
+         else { document.exitFullscreen(); }
+      });
+
    </script>
 </body>
 
